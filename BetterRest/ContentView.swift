@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var wakeUp = Date()
+    @State private var wakeUp = defaultWakeTime
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
     
@@ -18,28 +18,33 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("When do you want to wake up?")
-                    .font(.headline)
-                DatePicker("Please enter a time to wake up", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-                
-                Text("Desired amount of sleep")
-                    .font(.headline)
-                Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
-                    Text("\(sleepAmount, specifier: "%g") hours")
+            Form {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("When do you want to wake up?")
+                        .font(.headline)
+                    DatePicker("Please enter a time to wake up", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
                 }
                 
-                Text("Daily cofffee intake")
-                    .font(.headline)
-                Stepper(value: $coffeeAmount, in: 0...20) {
-                    if coffeeAmount == 1 {
-                        Text("1 cup")
-                    } else {
-                        Text("\(coffeeAmount) cups")
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Desired amount of sleep")
+                        .font(.headline)
+                    Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
+                        Text("\(sleepAmount, specifier: "%g") hours")
                     }
                 }
-                Spacer()
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Daily cofffee intake")
+                        .font(.headline)
+                    Stepper(value: $coffeeAmount, in: 0...20) {
+                        if coffeeAmount == 1 {
+                            Text("1 cup")
+                        } else {
+                            Text("\(coffeeAmount) cups")
+                        }
+                    }
+                }
             }
             .navigationBarTitle("BetterRest")
             .navigationBarItems(trailing: Button(action: calculateBedtime, label: {
@@ -50,6 +55,14 @@ struct ContentView: View {
             })
         }
     }
+    
+    static var defaultWakeTime: Date {
+        var components = DateComponents()
+        components.hour = 7
+        components.second = 0
+        return Calendar.current.date(from: components) ?? Date()
+    }
+    
     
     func calculateBedtime() {
         let model = SleepCalculator()
@@ -64,10 +77,10 @@ struct ContentView: View {
             let sleepTime = wakeUp - prediction.actualSleep
             
             let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .short
+            dateFormatter.timeStyle = .short
             
             alertMessage = dateFormatter.string(from: sleepTime)
-            alertTitle = "Your ideal sleep time is: "
+            alertTitle = "Your ideal bedtime is: "
         } catch {
             alertTitle = "Error!"
             alertMessage = "There was some problem predicting your bedtime"
