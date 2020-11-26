@@ -2,7 +2,6 @@
 //  ContentView.swift
 //  BetterRest
 //
-//  Created by Waveline Media on 11/26/20.
 //
 
 import SwiftUI
@@ -11,22 +10,19 @@ struct ContentView: View {
     @State private var wakeUp = defaultWakeTime
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
-    
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    @State private var showingAlert = false
+    @State private var bedtime = ""
     
     var body: some View {
         NavigationView {
             Form {
-                VStack(alignment: .leading, spacing: 0) {
+                Section {
                     Text("When do you want to wake up?")
                         .font(.headline)
                     DatePicker("Please enter a time to wake up", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                 }
                 
-                VStack(alignment: .leading, spacing: 0) {
+                Section {
                     Text("Desired amount of sleep")
                         .font(.headline)
                     Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
@@ -34,8 +30,8 @@ struct ContentView: View {
                     }
                 }
                 
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Daily cofffee intake")
+                Section {
+                    Text("Daily coffee intake")
                         .font(.headline)
                     Stepper(value: $coffeeAmount, in: 0...20) {
                         if coffeeAmount == 1 {
@@ -45,14 +41,16 @@ struct ContentView: View {
                         }
                     }
                 }
+                
+                Section {
+                    Text("Recommended Bedtime: ")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text("\(calculateBedtime())")
+                        .font(.title3)
+                }
             }
             .navigationBarTitle("BetterRest")
-            .navigationBarItems(trailing: Button(action: calculateBedtime, label: {
-                Text("Calculate")
-            }))
-            .alert(isPresented: $showingAlert, content: {
-                Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-            })
         }
     }
     
@@ -64,7 +62,7 @@ struct ContentView: View {
     }
     
     
-    func calculateBedtime() {
+    func calculateBedtime() -> String {
         let model = SleepCalculator()
         
         let components = Calendar.current.dateComponents([.hour, .minute], from: wakeUp)
@@ -79,13 +77,10 @@ struct ContentView: View {
             let dateFormatter = DateFormatter()
             dateFormatter.timeStyle = .short
             
-            alertMessage = dateFormatter.string(from: sleepTime)
-            alertTitle = "Your ideal bedtime is: "
+            return dateFormatter.string(from: sleepTime)
         } catch {
-            alertTitle = "Error!"
-            alertMessage = "There was some problem predicting your bedtime"
+            return "There was some problem predicting your bedtime"
         }
-        showingAlert = true
     }
 }
 
